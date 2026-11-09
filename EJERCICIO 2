@@ -1,0 +1,105 @@
+Funcion edad_valida = ValidarEdad ()
+	Definir edad_valida Como Entero
+	Escribir "Ingrese la edad del paciente (0 a 110 años):"
+	Leer edad_valida
+	Mientras edad_valida < 0 O edad_valida > 110 Hacer
+	Escribir "Error: La edad debe estar entre 0 y 110 años. Intente de nuevo:"
+	Leer edad_valida
+	FinMientras
+FinFuncion
+
+Funcion imc_valido = ValidarIMC ()
+	Definir imc_valido Como Real
+	Escribir "Ingrese el Índice de Masa Corporal (IMC de 10.0 a 60.0):"
+	Leer imc_valido
+	Mientras imc_valido < 10.0 O imc_valido > 60.0 Hacer
+	Escribir "Error: El IMC debe estar entre 10.0 y 60.0. Intente de nuevo:"
+	Leer imc_valido
+	FinMientras
+FinFuncion
+
+Funcion total = CalcularTarifa (edad, imc)
+	Definir costo_base, descuento, recargo, total Como Real
+	costo_base = 45000
+	Si edad >= 65 O edad < 12 Entonces
+	descuento = costo_base * 0.20
+	Sino
+	descuento = 0
+	FinSi
+	Si imc >= 30.0 Entonces
+	recargo = 12000
+	Sino
+	recargo = 0
+	FinSi
+	total = (costo_base - descuento) + recargo
+FinFuncion
+
+SubProceso RegistrarPaciente (edad, imc, recaudo Por Referencia, vulnerables Por Referencia, riesgo_imc Por Referencia, imc_alto Por Referencia)
+	Definir monto_pagado Como Real
+	monto_pagado = CalcularTarifa(edad, imc)
+	recaudo = recaudo + monto_pagado
+	Si edad >= 65 O edad < 12 Entonces
+	vulnerables = vulnerables + 1
+	FinSi
+	Si imc >= 30.0 Entonces
+	riesgo_imc = riesgo_imc + 1
+	FinSi
+	Si imc > imc_alto Entonces
+	imc_alto = imc
+	FinSi
+FinSubProceso
+
+SubProceso MostrarInforme (recaudo, total_pacientes, vulnerables, riesgo_imc, imc_alto)
+	Definir porcentaje_vulnerables Como Real
+	Si total_pacientes > 0 Entonces
+	porcentaje_vulnerables = (vulnerables * 100) / total_pacientes
+	Sino
+	porcentaje_vulnerables = 0
+	FinSi
+	
+	Escribir " INFORME EPIDEMIOLÓGICO - SALUDINTEGRAL IPS "
+	Escribir "Total Dinero Cobrado: $", recaudo
+	Escribir "Total de Pacientes Atendidos: ", total_pacientes
+	Escribir "Porcentaje de Pacientes con Subsidio de Edad: ", porcentaje_vulnerables, "%"
+	Escribir "IMC Más Alto Registrado en la Jornada: ", imc_alto
+FinSubProceso
+
+Algoritmo SaludIntegralIPS
+	Definir opcion, edad_ingresada Como Entero
+	Definir imc_ingresado, recaudacion_total, max_imc Como Real
+	Definir total_atendidos, cant_vulnerables, cant_riesgo Como Entero
+	
+	recaudacion_total = 0
+	total_atendidos = 0
+	cant_vulnerables = 0
+	cant_riesgo = 0
+	max_imc = 0
+	
+	Repetir
+
+	Escribir " CENTRO MÉDICO SALUDINTEGRAL IPS "
+	Escribir "1. Evaluar Paciente"
+	Escribir "2. Ver Informe Epidemiológico del Día"
+	Escribir "3. Cerrar Turno"
+	Escribir "Seleccione una opción (1-3):"
+	Leer opcion
+	
+	Segun opcion Hacer
+	1:
+	Escribir " EVALUACIÓN DE PACIENTE "
+	edad_ingresada = ValidarEdad()
+	imc_ingresado = ValidarIMC()
+	RegistrarPaciente(edad_ingresada, imc_ingresado, recaudacion_total, cant_vulnerables, cant_riesgo, max_imc)
+	total_atendidos <- total_atendidos + 1
+	
+	Escribir "COSTO A CANCELAR: $", CalcularTarifa(edad_ingresada, imc_ingresado)
+	2:
+    MostrarInforme(recaudacion_total, total_atendidos, cant_vulnerables, cant_riesgo, max_imc)
+    3:
+    Escribir "Cerrando turno en salud integral... ¡Hasta luego!"
+	De Otro Modo:
+    Escribir "Opción inválida. Intente de nuevo."
+	FinSegun
+	Hasta Que opcion = 3
+	
+FinAlgoritmo
